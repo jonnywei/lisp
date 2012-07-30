@@ -88,6 +88,42 @@
   (cons 'items- (objects-at 'body *objects* *object-locations*)))
 
 ;;define game repl
-
+;; test 
 (defun game-repl1()
   (loop (print (eval (read )))))
+;; normal game repl
+(defun game-repl ()
+  (let ((cmd (game-read)))
+    (unless (eq (car cmd) 'quit)
+      (game-print (game-eval cmd))
+      (game-repl))))
+
+
+;;define game read
+(defun game-read ()
+  (let ((cmd (read-from-string 
+	      (concatenate 'string "(" (read-line) ")" ))))
+    (flet ( (quote-it (object)
+	  (list 'quote object)))
+      (cons (car cmd) (mapcar #'quote-it (cdr cmd) ) ))))
+   
+   ; (append 'string "(" (read-line) ")" )))
+   ; append only be used for list
+
+
+;;;define game eval
+
+;; first define the function that the game can eval
+
+(defparameter *allowed-commands* '(look walk pickup inventory))
+
+;;then define game eval
+(defun  game-eval (expr)
+  (if (member (car expr ) *allowed-commands* )
+      (eval expr)
+      '(i do not know the command.)))
+
+;; define simplest game-print
+
+(defun game-print (lst)
+  (princ lst))
