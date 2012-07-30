@@ -86,3 +86,8 @@
 ;;;checking our inventory
 (defun inventory()
   (cons 'items- (objects-at 'body *objects* *object-locations*)))
+
+;;define game repl
+
+(defun game-repl1()
+  (loop (print (eval (read )))))
