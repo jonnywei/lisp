@@ -41,3 +41,27 @@
 	  (princ (dot-label node))
 	  (princ "\"];"))
 	nodes))
+;;;define edges to dots
+
+(defun edges->dot (edges )
+  (mapc (lambda (node)
+	  (mapc (lambda (edge)
+		  (fresh-line)
+		  (princ (dot-name (car node)))
+		  (princ "->")
+		  (princ (dot-name (car edge)))
+		  (princ "[label=\"")
+		  (princ (dot-label (cdr edge)))
+		  (princ "\"];"))
+		(cdr node)))
+	edges))
+
+;;; last
+(defun graph->dot (nodes edges )
+  (princ "digraph {")
+  (nodes->dot nodes)
+  (edges->dot edges)
+  (princ "}"))
+
+
+
