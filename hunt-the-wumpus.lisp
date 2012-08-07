@@ -84,7 +84,7 @@
 	 (cops (remove-if-not (lambda (x)
 				(zerop (random *cops-odds*))) ;1/*cop-odds* appear 0, so random ratio is 
 			      edge-list)))
-    (add-cops (edge-to-alist edge-list) cops)))
+    (add-cops (edges-to-alist edge-list) cops)))
 
 
 (defun edges-to-alist (edge-list)
@@ -95,3 +95,76 @@
 			  (remove-duplicates (direct-edges node1 edge-list)
 					     :test #'equal))))
 	  (remove-duplicates (mapcar #'car edge-list))))
+
+;; 
+(defun add-cops (edge-list edges-with-cops)
+  (mapcar (lambda (x)
+	    (let (( node1 (car x))
+		  ( node1-edges (cdr x)))
+	      (cons node1 
+		    (mapcar (lambda (edge)
+			      (let ((node2 (car edge)))
+				(if (intersection (edge-pair node1 node2)
+						  edges-with-cops
+						  :test #'equal)
+				    (list node2 'cops)
+				    edge)))
+			    node1-edges))))
+	  edge-list))
+
+;;; build city nodes
+
+(defun neighbors (node edge-list)
+  (mapcar  #'car (cdr ( assoc node edge-list))))
+
+;;define within one
+(defun within-one (a b edge-list)
+  (member b ( neighbors a edge-list)))
+
+;;define within two
+(defun within-two ( a b edge-alist)
+  (or (within-one a b edge-alist)
+      (some (lambda (x )
+	      (within-one x b edge-alist))
+	    (neighbors a edge-alist))))
+
+;;make city nodes
+(defun make-city-nodes (edge-alist)
+  (let ((wumpus (random-node))
+	(glow-worms (loop for i below *worm-num*
+			 collect(random-node))))
+    (loop for n from 1 to *node-num*
+	 collect (append (list n)
+			 (cond ((eql n wumpus) '(wumpus))
+			       ((within-two n  wumpus edge-alist) '(blood!)))
+			 (cond ((member n glow-worms)
+				'(glow-worm))
+			       (( some (lambda (worm) (within-one n worm edge-alist)) glow-worms)
+				'(lights!)))
+			 (when (some #'cdr (cdr (assoc n edge-alist)))
+			   '(sirens!))))))
+
+;; find empty node
+
+(defun find-empty-node ()
+  (let ((x  (random-node)))
+    (if (cdr (assoc x *congestion-city-nodes* ))
+	(find-empty-node )
+	x)))
+
+
+(defun new-game ()
+  (setf *congestion-city-edges* (make-city-edges))
+  (setf *congestion-city-nodes* (make-city-nodes *congestion-city-edges*))
+  (setf *player-pos* (find-empty-node))
+  (setf *visited-nodes* (list *player-pos*))
+  (draw-city))
+   
+
+(load "/home/wjj/work/lisp/visual-graph.lisp")
+
+(defun draw-city()
+  (graph->dot  *congestion-city-nodes* *congestion-city-edges*))
+
+
+
