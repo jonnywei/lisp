@@ -1,0 +1,9 @@
+;;;; dice of doom v1
+;;;; simple
+
+;;;first define some global variables
+
+(defvar *num-players* 2)
+(defvar *max-dice* 3)
+(defvar *board-size* 2)
+(defvar *board-hexnum* (* *board-size* *board-size*))
